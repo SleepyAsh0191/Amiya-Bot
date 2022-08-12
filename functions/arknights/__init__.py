@@ -3,4 +3,5 @@ from . import (enemy,
                recruit,
                operator,
                material,
-               calculator)
+               calculator,
+               stage)
