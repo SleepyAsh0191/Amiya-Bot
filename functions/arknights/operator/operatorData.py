@@ -5,6 +5,7 @@ from core.resource.arknightsGameData import ArknightsGameData, ArknightsGameData
 from core.resource.arknightsGameData.operatorBuilder import ArknightsConfig, parse_template
 from core.builtin.imageCreator import TextParser
 from core.builtin.messageChain import MAX_SEAT
+from core.resource.arknightsGameData.wiki import Wiki
 from core.util import integer, snake_case_to_pascal_case
 
 from .initData import OperatorSearchInfo
@@ -22,6 +23,7 @@ class OperatorData:
     @classmethod
     async def get_operator_detail(cls, info: OperatorSearchInfo):
         operators = ArknightsGameData().operators
+        real_name = await Wiki.get_real_name(info.name)
 
         if not info.name or info.name not in operators:
             return None
@@ -46,13 +48,14 @@ class OperatorData:
                 'id': operator.id,
                 'name': operator.name,
                 'en_name': operator.en_name,
+                'real_name': real_name,
                 'rarity': operator.rarity,
                 'range': operator.range,
                 'classes': operator.classes,
                 'classes_sub': operator.classes_sub,
                 'birthday': operator.birthday
             },
-            'skin': await ArknightsGameDataResource.get_skin_file(operator, operator.skins()[0]),
+            'skin': await ArknightsGameDataResource.get_skin_file(operator, operator.skins()[0], encode_url=True),
             'trust': trust,
             'detail': detail,
             'modules': module_attr,

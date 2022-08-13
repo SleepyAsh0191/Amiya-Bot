@@ -314,13 +314,16 @@ class ArknightsGameDataResource:
             pack.extract(pack_file, gamedata_path)
 
     @classmethod
-    async def get_skin_file(cls, operator: Operator, skin_data: dict):
+    async def get_skin_file(cls, operator: Operator, skin_data: dict, encode_url: bool = False):
         skin_file = f'{operator.id}_%s.png' % skin_data['skin_key']
         skin_path = f'resource/skins/{operator.id}/{skin_file}'
 
         if not os.path.exists(skin_path):
-            log.error(f'can not found skin {skin_path}')
             return None
+
+        if encode_url:
+            skin_path = skin_path.replace('#', '%23')
+
         return skin_path
 
     @classmethod
