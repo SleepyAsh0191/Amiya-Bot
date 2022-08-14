@@ -29,8 +29,9 @@ operatorSetting:
         '5': 资深干员
         '6': 高级资深干员
     types:
-        MELEE: 近战
-        RANGED: 远程
+        ALL: 不限部署位
+        MELEE: 近战位
+        RANGED: 远程位
 
 materialSetting:
     rate:

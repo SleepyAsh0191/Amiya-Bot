@@ -26,7 +26,7 @@ class OperatorData:
         real_name = await Wiki.get_real_name(info.name)
 
         if not info.name or info.name not in operators:
-            return None
+            return None, None
 
         operator = operators[info.name]
 
@@ -43,7 +43,7 @@ class OperatorData:
 
         skills, skills_id, skills_cost, skills_desc = operator.skills()
 
-        return {
+        operator_info = {
             'info': {
                 'id': operator.id,
                 'name': operator.name,
@@ -64,8 +64,15 @@ class OperatorData:
             'building_skills': operator.building_skills(),
             'skill_list': skills,
             'skills_cost': skills_cost,
-            'skills_desc': skills_desc,
+            'skills_desc': skills_desc
         }
+        tokens = {
+            'id': operator.id,
+            'name': operator.name,
+            'tokens': operator.tokens()
+        }
+
+        return operator_info, tokens
 
     @classmethod
     async def get_level_up_cost(cls, info: OperatorSearchInfo):

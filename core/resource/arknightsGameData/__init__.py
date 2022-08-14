@@ -9,13 +9,14 @@ from core.util import Singleton, remove_xml_tag, remove_punctuation, create_dir,
 from core import log
 
 from .common import ArknightsConfig, JsonData
-from .operatorBuilder import Operator
+from .operatorBuilder import Operator, Token, Collection
 from .wiki import Wiki
 
 STAGES = Dict[str, Dict[str, str]]
 ENEMIES = Dict[str, Dict[str, dict]]
 OPERATORS = Tuple[
     Dict[str, Operator],
+    Dict[str, Token],
     Dict[str, Dict[str, List[Operator]]]
 ]
 MATERIALS = Tuple[
@@ -43,16 +44,13 @@ def init_operators() -> OPERATORS:
 
     operators_list.update(operators_patch_list)
 
-    voice_map = {}
-    skins_map = {}
-
     for n, item in voice_data['charWords'].items():
         char_id = item['wordKey']
 
-        if char_id not in voice_map:
-            voice_map[char_id] = []
+        if char_id not in Collection.voice_map:
+            Collection.voice_map[char_id] = []
 
-        voice_map[char_id].append(item)
+        Collection.voice_map[char_id].append(item)
 
     for n, item in skins_data.items():
         char_id = item['charId']
@@ -61,24 +59,23 @@ def init_operators() -> OPERATORS:
         if 'char_1001_amiya2' in skin_id:
             char_id = 'char_1001_amiya2'
 
-        if char_id not in skins_map:
-            skins_map[char_id] = []
+        if char_id not in Collection.skins_map:
+            Collection.skins_map[char_id] = []
 
-        skins_map[char_id].append(item)
+        Collection.skins_map[char_id].append(item)
 
     operators: List[Operator] = []
     birth = {}
 
     for code, item in operators_list.items():
         if item['profession'] not in ArknightsConfig.classes:
+            Collection.tokens_map[code] = Token(code, item)
             continue
 
         operators.append(
             Operator(
                 code=code,
                 data=item,
-                voice_list=voice_map[code] if code in voice_map else [],
-                skins_list=skins_map[code] if code in skins_map else [],
                 is_recruit=item['name'] in recruit_operators
             )
         )
@@ -105,7 +102,7 @@ def init_operators() -> OPERATORS:
         birthdays[month] = sorted_dict(days)
     birthdays = sorted_dict(birthdays)
 
-    return {remove_punctuation(item.name): item for item in operators}, birthdays
+    return {remove_punctuation(item.name): item for item in operators}, Collection.tokens_map, birthdays
 
 
 def init_materials() -> MATERIALS:
@@ -243,7 +240,7 @@ class ArknightsGameData(metaclass=Singleton):
 
         self.stages, self.stages_map = init_stages()
         self.enemies = init_enemies()
-        self.operators, self.birthday = init_operators()
+        self.operators, self.tokens, self.birthday = init_operators()
         self.materials, self.materials_map, self.materials_made, self.materials_source = init_materials()
 
 

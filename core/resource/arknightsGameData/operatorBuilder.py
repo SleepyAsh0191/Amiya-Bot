@@ -1,5 +1,6 @@
 import re
 
+from typing import Dict
 from core.util import remove_xml_tag, remove_punctuation, integer
 
 from .common import ArknightsConfig, JsonData
@@ -60,9 +61,40 @@ def build_range(grids):
 
     return ''.join([''.join(item) + '\n' for item in range_map])
 
+class Token:
+    def __init__(self, code: str, data: dict):
+        range_data = JsonData.get_json_data('range_table')
+
+        self.id = code
+        self.name = data['name']
+        self.en_name = data['appellation']
+        self.description = data['description']
+        self.type = ArknightsConfig.types.get(data['position'])
+        self.attr = []
+
+        if data['phases']:
+            for evolve, item in enumerate(data['phases']):
+                range_id = item['rangeId']
+                range_map = '无范围'
+                if range_id in range_data:
+                    range_map = build_range(range_data[range_id]['grids'])
+
+                self.attr.append(
+                    {
+                        'evolve': evolve,
+                        'range': range_map,
+                        'attr': item['attributesKeyFrames']
+                    }
+                )
+
+    def __str__(self):
+        return f'{self.id}_{self.name}'
+
+    def __repr__(self):
+        return f'{self.id}_{self.name}'
 
 class Operator:
-    def __init__(self, code, data, voice_list, skins_list, is_recruit=False):
+    def __init__(self, code: str, data: dict, is_recruit: bool = False):
         sub_classes = JsonData.get_json_data('uniequip_table')['subProfDict']
         range_data = JsonData.get_json_data('range_table')
         nation_id = JsonData.get_json_data('character_table')
@@ -81,7 +113,7 @@ class Operator:
         self.classes = ArknightsConfig.classes[data['profession']]
         self.classes_sub = sub_classes[data['subProfessionId']]['subProfessionName']
         self.classes_code = data['profession']
-        self.type = ArknightsConfig.types[data['position']]
+        self.type = ArknightsConfig.types.get(data['position'])
         self.tags = data['tagList']
         self.range = range_map
         self.birthday = ''
@@ -92,8 +124,8 @@ class Operator:
 
         self.is_recruit = is_recruit
 
-        self.voice_list = voice_list
-        self.skins_list = sorted(skins_list, key=lambda n: n['displaySkin']['getTime'])
+        self.voice_list = Collection.get_voice_list(code)
+        self.skins_list = sorted(Collection.get_skins_list(code), key=lambda n: n['displaySkin']['getTime'])
 
         self.__tags()
         self.__extra()
@@ -132,6 +164,29 @@ class Operator:
         detail.update(max_attr)
 
         return detail, self.data['favorKeyFrames'][-1]['data']
+
+    def tokens(self):
+        token_list = []
+
+        if self.data['tokenKey'] and self.data['tokenKey'] in Collection.tokens_map:
+            token_list.append(Collection.tokens_map[self.data['tokenKey']])
+
+        if self.data['skills']:
+            for item in self.data['skills']:
+                if item['overrideTokenKey'] and item['overrideTokenKey'] in Collection.tokens_map:
+                    token_list.append(Collection.tokens_map[item['overrideTokenKey']])
+
+        return [
+            {
+                'id': item.id,
+                'type': item.type,
+                'name': item.name,
+                'en_name': item.en_name,
+                'description': item.description,
+                'attr': item.attr
+            } for item in token_list
+        ]
+
 
     def talents(self):
         talents = []
@@ -367,3 +422,16 @@ class Operator:
             self.name = '阿米娅近卫'
             self.en_name = 'AmiyaGuard'
             self.wiki_name = '阿米娅(近卫)'
+
+class Collection:
+    voice_map: dict = {}
+    skins_map: dict = {}
+    tokens_map: Dict[str, Token] = {}
+
+    @classmethod
+    def get_voice_list(cls, code):
+        return cls.voice_map.get(code, [])
+
+    @classmethod
+    def get_skins_list(cls, code):
+        return cls.skins_map.get(code, [])

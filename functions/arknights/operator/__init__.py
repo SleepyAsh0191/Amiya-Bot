@@ -345,14 +345,21 @@ async def _(data: Message):
 async def _(data: Message):
     info = search_info(data.text_cut, source_keys=['name'], text=data.text)
 
+    reply = Chain(data)
+
     if '技能' in data.text:
         result = await OperatorData.get_skills_detail(info)
-        template = 'operator/skillsDetail.html'
+        if result:
+            return reply.html('operator/skillsDetail.html', result)
     else:
-        result = await OperatorData.get_operator_detail(info)
-        template = 'operator/operatorInfo.html'
+        result, tokens = await OperatorData.get_operator_detail(info)
+        if result:
+            if '召唤物' not in data.text:
+                reply = reply.html('operator/operatorInfo.html', result)
+            elif not tokens['tokens']:
+                return Chain(data).text('博士，干员%s未拥有召唤物' % result['info']['name'])
+            if tokens['tokens']:
+                reply = reply.html('operator/operatorToken.html', tokens)
+            return reply
 
-    if not result:
-        return Chain(data).text('博士，请仔细描述想要查询的信息哦')
-
-    return Chain(data).html(template, result)
+    return Chain(data).text('博士，请仔细描述想要查询的信息哦')
