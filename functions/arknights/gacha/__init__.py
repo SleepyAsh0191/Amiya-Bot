@@ -1,4 +1,5 @@
 import re
+import os
 
 from typing import List
 from core.util import any_match
@@ -35,6 +36,12 @@ def change_pool(item: Pool, user_id=None):
     )
     task.execute()
 
+    pic = []
+    for root, dirs, files in os.walk('resource/pool'):
+        for file in files:
+            if item.pool_name in file:
+                pic.append(os.path.join(root, file))
+
     text = [
         f'{"所有" if not user_id else ""}博士的卡池已切换为{"【限定】" if item.limit_pool != 0 else ""}【{item.pool_name}】\n'
     ]
@@ -45,7 +52,7 @@ def change_pool(item: Pool, user_id=None):
     if item.pickup_4:
         text.append('[[cl ☆☆☆☆@#A288B5 cle]　　] %s' % item.pickup_4.replace(',', '、'))
 
-    return '\n'.join(text)
+    return '\n'.join(text), pic[-1] if pic else ''
 
 
 @bot.on_group_message(function_id='gacha', keywords=['抽', '连', '寻访'])
@@ -132,8 +139,11 @@ async def _(data: Message):
                 message = all_pools[index].pool_name
 
         for item in all_pools:
+            change_res = change_pool(item, data.user_id if not all_people else None)
             if item.pool_name in message:
-                return Chain(data).text_image(change_pool(item, data.user_id if not all_people else None))
+                if change_res[1]:
+                    return Chain(data).image(change_res[1]).text_image(change_res[0])
+                return Chain(data).text_image(change_res[0])
 
     text = '博士，这是可更换的卡池列表：\n\n'
     pools = []

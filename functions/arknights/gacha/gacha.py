@@ -385,6 +385,12 @@ class GachaPool:
                 )
                 task.execute()
 
+                pic = []
+                for root, dirs, files in os.walk('resource/pool'):
+                    for file in files:
+                        if item.pool_name in file:
+                            pic.append(os.path.join(root, file))
+
                 text = [
                     f'{"所有" if not user_id else ""}博士的卡池已切换为'
                     f'{"【限定】" if item.limit_pool != 0 else ""}【{item.pool_name}】\n'
@@ -396,7 +402,7 @@ class GachaPool:
                 if item.pickup_4:
                     text.append('[☆☆☆☆　　] %s' % item.pickup_4.replace(',', '、'))
 
-                return '\n'.join(text)
+                return '\n'.join(text), pic[-1] if pic else ''
 
         return '博士，要告诉阿米娅准确的卡池序号或名称哦'
 
