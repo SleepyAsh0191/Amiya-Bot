@@ -38,9 +38,11 @@
                 <div class="sub_title">主线掉落</div>
                 <div class="source-detail">
                     <div v-for="item in data.source.main">
-                        <div>{{ item.stage_code }}</div>
-                        <div>{{ item.stage_name }}</div>
-                        <div :rate="item.rate">{{ item.rate }}</div>
+                        <div>
+                            <span :rate="item.rate">{{ item.rate }}</span>
+                        </div>
+                        <div>{{ item.code }}</div>
+                        <div>{{ item.name }}</div>
                     </div>
                 </div>
             </div>
@@ -48,14 +50,39 @@
                 <div class="sub_title">活动掉落</div>
                 <div class="source-detail">
                     <div v-for="item in data.source.act">
-                        <div>{{ item.stage_code }}</div>
-                        <div>{{ item.stage_name }}</div>
-                        <div :rate="item.rate">{{ item.rate }}</div>
+                        <div>
+                            <span :rate="item.rate">{{ item.rate }}</span>
+                        </div>
+                        <div>{{ item.code }}</div>
+                        <div>{{ item.name }}</div>
                     </div>
                 </div>
             </div>
         </div>
     </template>
+    <!-- <template v-if="data.recommend.length">
+        <div class="title">推荐刷取地图</div>
+        <table class="recommend-table">
+            <tr>
+                <td>关卡编号</td>
+                <td>关卡名</td>
+                <td>所属</td>
+                <td>理智</td>
+                <td>单件平均掉率</td>
+                <td>单件期望理智</td>
+                <td>备注</td>
+            </tr>
+            <tr class="recommend-stage" v-for="item in data.recommend">
+                <td>{{ item.code }}</td>
+                <td>{{ item.name }}</td>
+                <td>{{ stageType[item.stageType] }}</td>
+                <td>{{ item.apCost }}</td>
+                <td>{{ (item.rate * 100).toFixed(2) }}%</td>
+                <td>{{ parseInt(item.desired) }}</td>
+                <td>{{ remark(item.stageType) }}</td>
+            </tr>
+        </table>
+    </template> -->
 </div>
 </body>
 <script src="../vue.min.js"></script>
@@ -79,11 +106,25 @@
         methods: {
             init(data) {
                 this.$set(this, 'data', data)
+            },
+            remark(type) {
+                if (type === 'ACTIVITY') {
+                    return '仅在活动开放或复刻期间有效'
+                }
             }
         },
         data() {
             return {
-                data: {}
+                data: {},
+                stageType: {
+                    'MAIN': '主线',
+                    'SUB': '支线',
+                    'SPECIAL_STORY': '故事集',
+                    'DAILY': '日常',
+                    'ACTIVITY': '活动',
+                    'CAMPAIGN': '剿灭',
+                    'CLIMB_TOWER': '保全派驻'
+                }
             }
         },
         mounted() {

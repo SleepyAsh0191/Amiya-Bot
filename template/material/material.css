@@ -111,18 +111,19 @@ body {
 .source-detail > div {
     width: 50%;
     display: flex;
-    margin: 3px 0;
+    margin: 5px 0;
+}
+
+.source-detail > div > div {
+    margin-right: 5px;
 }
 
 .source-detail > div > div:nth-child(1) {
-    width: 60px;
+    width: 70px;
+    text-align: right;
 }
 
-.source-detail > div > div:nth-child(2) {
-    width: 150px;
-}
-
-.source-detail > div > div:nth-child(3) {
+.source-detail > div > div:nth-child(1) > span {
     padding: 2px 5px;
     border-radius: 4px;
 }
@@ -153,4 +154,16 @@ body {
 .sub_title {
     margin-bottom: 20px;;
     font-size: 20px;
+}
+
+.recommend-table td {
+    padding: 5px 10px;
+}
+
+.recommend-table tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.recommend-table tr.recommend-stage:nth-child(-n+4) {
+    color: #66bb6a;
 }
